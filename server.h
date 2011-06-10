@@ -112,7 +112,7 @@ struct server_db_ops {
 	char	* (*pwdb_lookup)(const char *user);
 	bool	(*sharelog)(const char *rem_host, const char *username,
 			    const char *our_result, const char *upstream_result,
-			    const char *reason, const char *solution);
+			    const char *reason, const char *solution, const char * block_number);
 	bool	(*open)(void);
 	void	(*close)(void);
 };
@@ -203,7 +203,7 @@ extern bool use_syslog;
 extern struct server srv;
 extern void sharelog(const char *rem_host, const char *username,
 		     const char *, const char *,
-		     const char *, const char *);
+		     const char *, const char *, const char *);
 extern bool cjson_encode(unsigned char op, const char *obj_unc,
 		  void **msg_out, size_t *msglen_out);
 extern bool cjson_encode_obj(unsigned char op, const json_t *obj,
@@ -221,6 +221,8 @@ extern void syslogerr(const char *prefix);
 extern int fsetflags(const char *prefix, int fd, int or_flags);
 extern json_t *json_rpc_call(CURL *curl, const char *url,
 		      const char *userpass, const char *rpc_req);
+const char * get_current_block_count(CURL *curl, const char *url,
+		      const char *userpass);
 extern char *bin2hex(unsigned char *p, size_t len);
 extern bool hex2bin(unsigned char *p, const char *hexstr, size_t len);
 extern unsigned char * g_base64_decode (const char *text, size_t *out_len);

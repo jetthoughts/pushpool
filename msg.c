@@ -329,7 +329,7 @@ static bool submit_work(const char *remote_host, const char *auth_user,
 		goto out;
 	if (check_rc == 0) {	/* invalid hash */
 		*json_result = false;
-		sharelog(remote_host, auth_user, "N", NULL, reason, hexstr);
+		sharelog(remote_host, auth_user, "N", NULL, reason, hexstr, NULL);
 		return true;
 	}
 
@@ -338,7 +338,7 @@ static bool submit_work(const char *remote_host, const char *auth_user,
 	 */
 	if (srv.easy_target && check_rc == 1) {
 		*json_result = true;
-		sharelog(remote_host, auth_user, "Y", NULL, NULL, hexstr);
+		sharelog(remote_host, auth_user, "Y", NULL, NULL, hexstr, NULL);
 		return true;
 	}
 
@@ -359,7 +359,8 @@ static bool submit_work(const char *remote_host, const char *auth_user,
 
 	sharelog(remote_host, auth_user,
 		 srv.easy_target ? "Y" : *json_result ? "Y" : "N",
-		 *json_result ? "Y" : "N", NULL, hexstr);
+		 *json_result ? "Y" : "N", NULL, hexstr,
+     *json_result ? get_current_block_count(curl, srv.rpc_url, srv.rpc_userpass) : NULL);
 
 	if (debugging > 1)
 		applog(LOG_INFO, "[%s] PROOF-OF-WORK submitted upstream.  "

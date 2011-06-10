@@ -37,7 +37,7 @@
 	"SELECT password FROM pool_worker WHERE username = $1"
 #define DEFAULT_STMT_SHARELOG \
 	"insert into shares (rem_host, username, our_result, \
-	upstream_result, reason, solution) values($1, $2, $3, $4, $5, decode($6, 'hex'))"
+	upstream_result, reason, solution, block_number) values($1, $2, $3, $4, $5, decode($6, 'hex'), $7)"
 
 static bool pg_conncheck(void)
 {
@@ -79,17 +79,18 @@ out:
 static bool pg_sharelog(const char *rem_host, const char *username,
 			const char *our_result,
 			const char *upstream_result, const char *reason,
-			const char *solution)
+			const char *solution,
+      const char *block_number)
 {
 	PGresult *res;
 	/* PG does a fine job with timestamps so we won't bother. */
 	const char *paramvalues[] = { rem_host, username, our_result,
-		upstream_result, reason, solution
+		upstream_result, reason, solution, block_number
 	};
 	if (!pg_conncheck())
 		return false;
 	res =
-	    PQexecParams(srv.db_cxn, srv.db_stmt_sharelog, 6, NULL,
+	    PQexecParams(srv.db_cxn, srv.db_stmt_sharelog, 7, NULL,
 			 paramvalues, NULL, NULL, 0);
 	if (PQresultStatus(res) != PGRES_COMMAND_OK)
 		applog(LOG_ERR, "pg_sharelog failed: %s",

@@ -661,7 +661,7 @@ static void reqlog(const char *rem_host, const char *username,
 
 void sharelog(const char *rem_host, const char *username,
 	      const char *our_result, const char *upstream_result,
-	      const char *reason, const char *solution)
+	      const char *reason, const char *solution, const char * block_number)
 {
 	struct timeval tv = { };
 	char *f;
@@ -670,7 +670,7 @@ void sharelog(const char *rem_host, const char *username,
 
 	if (srv.db_sharelog && srv.db_ops->sharelog != NULL)
 		srv.db_ops->sharelog(rem_host, username, our_result,
-				     upstream_result, reason, solution);
+				     upstream_result, reason, solution, block_number);
 
 	if (srv.share_fd < 0)
 		return;
@@ -678,7 +678,7 @@ void sharelog(const char *rem_host, const char *username,
 	gettimeofday(&tv, NULL);
 	gmtime_r(&tv.tv_sec, &tm);
 
-	if (asprintf(&f, "[%d-%02d-%02d %02d:%02d:%02.6f] %s %s %s %s %s %s\n",
+	if (asprintf(&f, "[%d-%02d-%02d %02d:%02d:%02.6f] %s %s %s %s %s %s %s\n",
 		tm.tm_year + 1900,
 		tm.tm_mon + 1,
 		tm.tm_mday,
@@ -691,7 +691,8 @@ void sharelog(const char *rem_host, const char *username,
 	        (our_result && *our_result) ? our_result : "-",
 	        (upstream_result && *upstream_result) ? upstream_result : "-",
 	        (reason && *reason) ? reason : "-",
-		(solution && *solution) ? solution : "-") < 0)
+		(solution && *solution) ? solution : "-",
+    (block_number && *block_number) ? block_number : "-") < 0)
 		return;
 
 	wrc = write(srv.share_fd, f, strlen(f));

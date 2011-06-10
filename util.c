@@ -18,6 +18,10 @@
  *
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "autotools-config.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -54,7 +58,7 @@ void applog(int prio, const char *fmt, ...)
 			 tm.tm_mday,
 			 tm.tm_hour,
 			 tm.tm_min, tm.tm_sec + tv.tv_usec / 1000000.0,
-			 fmt)<0)
+			 fmt)>=0)
 			vfprintf(stderr, f, ap); /* atomic write to stderr */
 		free(f);
 	}
@@ -319,6 +323,21 @@ err_out:
 	curl_slist_free_all(headers);
 	curl_easy_reset(curl);
 	return NULL;
+}
+
+char block_count_response[10];
+const char * get_current_block_count(CURL *curl, const char *url,
+		      const char *userpass)
+{
+  json_t * val;
+  val = json_rpc_call(curl, url, userpass, "{\"method\":\"getblocknumber\",\"params\":[],\"id\":0}");
+  if (!val) {
+    applog(LOG_ERR, "getblocknumber json_rpc_call failed");
+    return NULL;
+  }
+  snprintf(block_count_response, sizeof(block_count_response), "%d", (int)json_integer_value(json_object_get(val, "result")));
+  json_decref(val);
+  return block_count_response;
 }
 
 char *bin2hex(unsigned char *p, size_t len)
